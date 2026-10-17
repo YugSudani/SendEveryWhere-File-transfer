@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const constants = require('../config/constants');
 
 const storedFileSchema = new mongoose.Schema(
   {
@@ -20,7 +21,10 @@ const fileShareSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// TTL index: MongoDB removes the document once expiresAt passes.
-fileShareSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// Safety net only. `expiresAt` is already set to now + EXPIRY_MINUTES at
+// creation time, so this index is purely a backstop that reaps documents the
+// cleanup cron never processed. The grace period keeps it from deleting a
+// document before the cron has had a chance to delete the stored files.
+fileShareSchema.index({ expiresAt: 1 }, { expireAfterSeconds: constants.TTL_GRACE_SECONDS });
 
 module.exports = mongoose.model('FileShare', fileShareSchema);

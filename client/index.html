@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sendora™ — Send large files - Free & secure</title>
+    <title>SendEveryWhere™ — Send files - Fast - Free & secure</title>
+    <link rel="icon" type="image/x-icon" href="/faviconn.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,29 +17,31 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              serif: ['"Playfair Display"', 'Georgia', 'serif'],
+              sans: ["Inter", "sans-serif"],
+              serif: ['"Playfair Display"', "Georgia", "serif"],
             },
             colors: {
-              limeBadge: '#c2df28',
-              sendoraBlue: '#3b82f6',
-              sendoraDark: '#0f172a',
+              limeBadge: "#c2df28",
+              sendoraBlue: "#3b82f6",
+              sendoraDark: "#0f172a",
             },
           },
         },
-      }
+      };
     </script>
   </head>
   <body>
     <script>
       try {
-        var t = localStorage.getItem('sendeverywhere:theme');
-        if (t !== 'light' && t !== 'dark') {
-          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        var t = localStorage.getItem("sendeverywhere:theme");
+        if (t !== "light" && t !== "dark") {
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
         }
         document.documentElement.dataset.theme = t;
       } catch (e) {
-        document.documentElement.dataset.theme = 'light';
+        document.documentElement.dataset.theme = "light";
       }
     </script>
     <div id="root"></div>

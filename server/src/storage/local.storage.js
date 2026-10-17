@@ -20,6 +20,26 @@ async function deleteFiles(storedNames = []) {
   await Promise.all(storedNames.map((n) => deleteFile(n)));
 }
 
+async function listFiles() {
+  let entries;
+  try {
+    entries = await fs.readdir(constants.UPLOAD_DIR, { withFileTypes: true });
+  } catch (err) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+
+  const files = [];
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    const fullPath = path.join(constants.UPLOAD_DIR, entry.name);
+    // eslint-disable-next-line no-await-in-loop
+    const stat = await fs.stat(fullPath);
+    files.push({ name: entry.name, modifiedMs: stat.mtimeMs });
+  }
+  return files;
+}
+
 function createZip(entries, destPath) {
   return new Promise((resolve, reject) => {
     const output = createWriteStream(destPath);
@@ -35,4 +55,4 @@ function createZip(entries, destPath) {
   });
 }
 
-module.exports = { getFilePath, deleteFile, deleteFiles, createZip };
+module.exports = { getFilePath, deleteFile, deleteFiles, listFiles, createZip };

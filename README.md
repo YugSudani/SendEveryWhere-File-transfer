@@ -39,6 +39,13 @@ Open `http://localhost:5173`. API runs on `http://localhost:5000`.
 
 Response shape: `{ success, data, message }`.
 
+## Deploying
+1. Set environment variables on your host (see `server/.env.example`). `MONGO_URI` must point to a reachable MongoDB (Atlas or self-hosted). `.env` is gitignored and is NOT deployed automatically.
+2. MongoDB Atlas: add your host's IP (or `0.0.0.0/0`) under Network Access, otherwise connections are rejected.
+3. If your host/DNS refuses SRV lookups (`querySrv EREFUSED`), use the direct (non-`+srv`) connection string from `.env.example` instead of the `mongodb+srv://` form.
+4. Set `CLIENT_URL` to your deployed frontend origin and `VITE_API_BASE_URL` (client) to your deployed API URL.
+5. Ensure the `uploads/` directory is writable (or switch to S3/R2 storage).
+
 ## Notes
 
 - Max file size configurable via `MAX_FILE_SIZE_MB` (default 100).

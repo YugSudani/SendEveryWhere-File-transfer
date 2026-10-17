@@ -63,4 +63,35 @@ async function removeExpiredShares() {
   return removed;
 }
 
-module.exports = { createShare, getShareByCode, deleteShareFiles, removeExpiredShares };
+/**
+ * Safety net for files that lost their database document without the files
+ * being cleaned up -- e.g. the process crashed between the upload landing on
+ * disk and the share document being written. Anything on disk that no document
+ * still references, and that is old enough to not be an in-flight upload, gets
+ * removed.
+ */
+async function removeOrphanFiles() {
+  const referenced = new Set();
+  const docs = await FileShare.find({}, { files: 1 });
+  for (const doc of docs) {
+    for (const file of doc.files) {
+      referenced.add(file.storedName);
+    }
+  }
+
+  const now = Date.now();
+  const orphans = (await storage.listFiles())
+    .filter((f) => !referenced.has(f.name) && now - f.modifiedMs >= constants.ORPHAN_MIN_AGE_MS)
+    .map((f) => f.name);
+
+  await storage.deleteFiles(orphans);
+  return orphans.length;
+}
+
+module.exports = {
+  createShare,
+  getShareByCode,
+  deleteShareFiles,
+  removeExpiredShares,
+  removeOrphanFiles,
+};

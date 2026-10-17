@@ -18,8 +18,12 @@ async function deleteFiles() {
   return notImplemented('deleteFiles');
 }
 
+async function listFiles() {
+  return notImplemented('listFiles');
+}
+
 async function createZip() {
   return notImplemented('createZip');
 }
 
-module.exports = { getFilePath, deleteFile, deleteFiles, createZip };
+module.exports = { getFilePath, deleteFile, deleteFiles, listFiles, createZip };
