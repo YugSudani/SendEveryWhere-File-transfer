@@ -14,6 +14,7 @@ import {
   RefreshIcon,
   KeyIcon,
 } from './Icons.jsx';
+import { MAX_FILE_SIZE_MB, MAX_FILES_COUNT } from '../utils/validators.js';
 import { useUpload } from '../features/send/useUpload.js';
 import { useDownload } from '../features/receive/useDownload.js';
 import { CodeBoxes } from './CodeBoxes.jsx';
@@ -51,9 +52,6 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   const { copied, copy } = useCopy();
   const [dragging, setDragging] = useState(false);
   const [activeTab, setActiveTab] = useState('files'); // 'files' | 'folders'
-  const [sendTo, setSendTo] = useState('');
-  const [yourEmail, setYourEmail] = useState('');
-  const [message, setMessage] = useState('');
   const [isPrivate, setIsPrivate] = useState(true);
   const [downloadingState, setDownloadingState] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -186,7 +184,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   {files.length === 0 ? (
                     <>
                       <h3 className="dropzone-heading">Choose a file or drag & drop it here.</h3>
-                      <p className="dropzone-sub">Max size: 50GB per file or folder</p>
+                      <p className="dropzone-sub">Max size: {MAX_FILE_SIZE_MB}MB per file, up to {MAX_FILES_COUNT} files</p>
                       <button
                         type="button"
                         className="btn-browse"
@@ -218,52 +216,50 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   )}
                 </div>
 
-                {/* Input Fields (Stable, never pushed down) */}
-                <div className="inputs-grid">
-                  <div className="input-group">
-                    <UserIcon size={16} color="#94a3b8" className="input-icon" />
-                    <input
-                      type="text"
-                      className="sendora-input"
-                      placeholder="Send to"
-                      value={sendTo}
-                      onChange={(e) => setSendTo(e.target.value)}
-                    />
+                {/* Selected files preview (inside card, max height, scrollable) */}
+                {files.length > 0 && (
+                  <div className="selected-files-preview">
+                    <div className="selected-files-header">
+                      <span className="selected-files-title">
+                        {files.length} {files.length === 1 ? 'file' : 'files'} ({formatBytes(totalBytes)})
+                      </span>
+                      <button
+                        type="button"
+                        className="selected-files-clear"
+                        onClick={clearUpload}
+                        title="Remove all files"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <ul className="selected-file-list">
+                      {files.map((f, i) => (
+                        <li key={`${f.name}-${i}`} className="selected-file-item">
+                          <div className="selected-file-info">
+                            <FileIcon size={14} color="#3b82f6" />
+                            <span className="selected-file-name" title={f.name}>
+                              {f.name}
+                            </span>
+                          </div>
+                          <div className="selected-file-actions">
+                            <span className="selected-file-size">
+                              {formatBytes(f.size)}
+                            </span>
+                            <button
+                              type="button"
+                              className="selected-file-remove"
+                              onClick={() => removeFile(i)}
+                              title={`Remove ${f.name}`}
+                              aria-label={`Remove ${f.name}`}
+                            >
+                              <CloseIcon size={12} />
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="input-group">
-                    <MailIcon size={16} color="#94a3b8" className="input-icon" />
-                    <input
-                      type="email"
-                      className="sendora-input"
-                      placeholder="Your email"
-                      value={yourEmail}
-                      onChange={(e) => setYourEmail(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Message and Private Toggle */}
-                <div className="message-row">
-                  <input
-                    type="text"
-                    className="sendora-input-message"
-                    placeholder="Message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                  <div className="private-toggle-wrap">
-                    <span className="private-label">Private</span>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isPrivate}
-                      className={`toggle-switch ${isPrivate ? 'active' : ''}`}
-                      onClick={() => setIsPrivate(!isPrivate)}
-                    >
-                      <span className="toggle-handle" />
-                    </button>
-                  </div>
-                </div>
+                )}
 
                 {/* Error Banner */}
                 {uploadError && <div className="sendora-error-banner">{uploadError}</div>}
@@ -551,65 +547,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
       </div>
 
       {/* DEDICATED FILES SIDE CARD (Appears cleanly on the side, eliminating glitches) */}
-      {mode === 'send' && files.length > 0 && !result && !uploading && (
-        <aside className="files-side-panel">
-          <div className="side-panel-header">
-            <div className="side-panel-title-wrap">
-              <span className="side-panel-badge">{files.length}</span>
-              <h4 className="side-panel-title">Attached Files</h4>
-            </div>
-            <button
-              type="button"
-              className="btn-clear-side"
-              onClick={clearUpload}
-              title="Remove all files"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <div className="side-panel-sub">
-            Total size: <strong>{formatBytes(totalBytes)}</strong>
-          </div>
-
-          <ul className="side-file-list">
-            {files.map((f, i) => (
-              <li key={`${f.name}-${i}`} className="side-file-item">
-                <div className="side-file-info">
-                  <div className="side-file-icon">
-                    <FileIcon size={16} color="#3b82f6" />
-                  </div>
-                  <div className="side-file-texts">
-                    <span className="side-file-name" title={f.name}>
-                      {f.name}
-                    </span>
-                    <span className="side-file-size">{formatBytes(f.size)}</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="btn-remove-side"
-                  onClick={() => removeFile(i)}
-                  title={`Remove ${f.name}`}
-                  aria-label={`Remove ${f.name}`}
-                >
-                  <CloseIcon size={14} />
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          <div className="side-panel-footer">
-            <button
-              type="button"
-              className="btn-add-more-side"
-              onClick={openFilePicker}
-            >
-              + Add more files
-            </button>
-          </div>
-        </aside>
-      )}
+      {mode === 'send' && files.length > 0 && !result && !uploading && null}
     </div>
   );
 }

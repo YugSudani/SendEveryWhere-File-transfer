@@ -1129,7 +1129,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding-top: 12px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -1643,14 +1642,202 @@ body {
     grid-template-columns: 1fr 1fr;
   }
 
-  .sponsors-row {
-    gap: 20px;
+  /* ---------- Mobile navbar: stack + smaller pills ---------- */
+  @media (max-width: 768px) {
+    .sendora-header {
+      padding: 0 12px;
+    }
+
+    .navbar-container {
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 24px;
+    }
+
+    .brand-container {
+      flex: 0 0 auto;
+    }
+
+    .sendora-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .navbar-nav-working {
+      order: 3;
+      flex: 1 1 100%;
+      justify-content: center;
+      gap: 2px;
+      padding: 2px;
+    }
+
+    .nav-pill-tab {
+      padding: 5px 10px;
+      font-size: 12px;
+      gap: 4px;
+    }
+
+    .nav-pill-tab svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .navbar-actions {
+      gap: 6px;
+    }
+
+    .theme-toggle {
+      width: 30px;
+      height: 30px;
+    }
+
+    .btn-quick-mode {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
   }
 }
 
 /* =========================================================
-   ACTIVITY PANEL (usage history, localStorage-backed)
+   SELECTED FILES PREVIEW (inside send card, scrollable)
    ========================================================= */
+.selected-files-preview {
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.selected-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.selected-files-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.selected-files-clear {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.selected-files-clear:hover {
+  text-decoration: underline;
+}
+
+.selected-file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selected-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.selected-file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.selected-file-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selected-file-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.selected-file-size {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.selected-file-remove {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.selected-file-remove:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* dark overrides for the preview */
+[data-theme="dark"] .selected-files-preview {
+  background: #0b1528;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .selected-files-title {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .selected-file-item {
+  background: #101c33;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .selected-file-name {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .selected-file-size {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .selected-file-remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
 .activity-card {
   width: 560px;
   max-width: 92vw;

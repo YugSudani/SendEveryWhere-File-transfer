@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { uploadFiles } from '../../api/files.js';
+import { validateSelectedFiles } from '../../utils/validators.js';
 import { logTransfer } from '../../utils/activity.js';
 
 export function useUpload() {
@@ -21,6 +22,11 @@ export function useUpload() {
   function appendFiles(newFiles) {
     const list = Array.from(newFiles || []);
     if (list.length === 0) return;
+    const message = validateSelectedFiles(list);
+    if (message) {
+      setError(message);
+      return;
+    }
     setError('');
     setResult(null);
     setFiles((prev) => [...prev, ...list]);
