@@ -66,7 +66,12 @@ export function Navbar({ activeMode, onSwitchMode }) {
               onSwitchMode?.(activeMode === "send" ? "receive" : "send")
             }
           >
-            {activeMode === "send" ? "Have a Code?" : "Send Files"}
+            <span className="quick-label-full">
+              {activeMode === "send" ? "Have a Code?" : "Send Files"}
+            </span>
+            <span className="quick-label-short" aria-hidden="true">
+              {activeMode === "send" ? "Code?" : "Send"}
+            </span>
           </button>
         </div>
       </div>

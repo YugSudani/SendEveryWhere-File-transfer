@@ -98,6 +98,7 @@ body {
   color: #0f172a;
   display: flex;
   align-items: baseline;
+  white-space: nowrap;
 }
 
 .brand-tm {
@@ -164,6 +165,14 @@ body {
 .btn-quick-mode:hover {
   background: #1e293b;
   transform: translateY(-1px);
+}
+
+.quick-label-full {
+  display: inline;
+}
+
+.quick-label-short {
+  display: none;
 }
 
 /* =========================================================
@@ -307,8 +316,7 @@ body {
   }
 
   100% {
-    filter: drop-shadow(0 20px 40px rgba(59, 130, 246, 0.25))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 20px 40px rgba(59, 130, 246, 0.25)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3));
   }
 }
 
@@ -318,8 +326,7 @@ body {
   }
 
   100% {
-    filter: drop-shadow(0 20px 40px rgba(99, 102, 241, 0.25))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 20px 40px rgba(99, 102, 241, 0.25)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3));
   }
 }
 
@@ -948,12 +955,10 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
   animation: shimmer 1.5s infinite;
 }
 
@@ -1576,6 +1581,7 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -1642,65 +1648,239 @@ body {
     grid-template-columns: 1fr 1fr;
   }
 
+  .hero-main {
+    padding-top: 120px;
+  }
+
   /* ---------- Mobile navbar: stack + smaller pills ---------- */
-  @media (max-width: 768px) {
-    .sendora-header {
-      padding: 0 12px;
-    }
+  .sendora-header {
+    padding: 0 12px;
+  }
 
-    .navbar-container {
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 24px;
-    }
+  .navbar-container {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 24px;
+  }
 
-    .brand-container {
-      flex: 0 0 auto;
-    }
+  .brand-container {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
 
-    .sendora-logo {
-      width: 24px;
-      height: 24px;
-    }
+  .sendora-logo {
+    width: 24px;
+    height: 24px;
+  }
 
-    .brand-name {
-      font-size: 15px;
-      letter-spacing: 0;
-    }
+  .brand-name {
+    font-size: 15px;
+    letter-spacing: 0;
+  }
 
-    .navbar-nav-working {
-      order: 3;
-      flex: 1 1 100%;
-      justify-content: center;
-      gap: 2px;
-      padding: 2px;
-    }
+  .navbar-nav-working {
+    order: 3;
+    flex: 1 1 100%;
+    justify-content: center;
+    gap: 2px;
+    padding: 2px;
+  }
 
-    .nav-pill-tab {
-      padding: 5px 10px;
-      font-size: 12px;
-      gap: 4px;
-    }
+  .nav-pill-tab {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
 
-    .nav-pill-tab svg {
-      width: 12px;
-      height: 12px;
-    }
+  .nav-pill-tab svg {
+    width: 12px;
+    height: 12px;
+  }
 
-    .navbar-actions {
-      gap: 6px;
-    }
+  .navbar-actions {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-    .theme-toggle {
-      width: 30px;
-      height: 30px;
-    }
+  .theme-toggle {
+    width: 30px;
+    height: 30px;
+  }
 
-    .btn-quick-mode {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
+  .btn-quick-mode {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ---------- Progressive responsive tuning for small screens ---------- */
+@media (max-width: 640px) {
+  .sendora-header {
+    padding: 0 10px;
+    top: 10px;
+  }
+
+  .navbar-container {
+    padding: 8px 10px;
+    gap: 6px;
+    border-radius: 20px;
+  }
+
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .navbar-nav-working {
+    padding: 2px;
+  }
+
+  .nav-pill-tab {
+    padding: 5px 8px;
+    font-size: 11.5px;
+  }
+
+  .theme-toggle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .btn-quick-mode {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+
+  .hero-main {
+    padding-top: 118px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sendora-header {
+    padding: 0 8px;
+  }
+
+  .navbar-container {
+    padding: 6px 8px;
+    gap: 6px;
+    border-radius: 18px;
+  }
+
+  .brand-container {
+    gap: 6px;
+  }
+
+  .sendora-logo {
+    width: 22px;
+    height: 22px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+  }
+
+  .nav-pill-tab {
+    padding: 4px 7px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .nav-pill-tab svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .theme-toggle {
+    width: 26px;
+    height: 26px;
+  }
+
+  .btn-quick-mode {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .quick-label-full {
+    display: none;
+  }
+
+  .quick-label-short {
+    display: inline;
+  }
+
+  .hero-main {
+    padding-top: 126px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sendora-header {
+    padding: 0 6px;
+  }
+
+  .navbar-container {
+    padding: 6px 8px;
+    gap: 4px;
+    border-radius: 16px;
+  }
+
+  .sendora-logo {
+    width: 20px;
+    height: 20px;
+  }
+
+  .brand-name {
+    font-size: 12px;
+  }
+
+  .navbar-nav-working {
+    gap: 1px;
+    padding: 2px;
+  }
+
+  .nav-pill-tab {
+    padding: 4px 6px;
+    font-size: 10.5px;
+    gap: 3px;
+  }
+
+  .theme-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .theme-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .btn-quick-mode {
+    padding: 4px 8px;
+    font-size: 10.5px;
+  }
+
+  .hero-main {
+    padding-top: 134px;
+  }
+}
+
+@media (max-width: 340px) {
+  .brand-name {
+    font-size: 11.5px;
+  }
+
+  .nav-pill-tab {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  .btn-quick-mode {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .hero-main {
+    padding-top: 32%;
   }
 }
 
@@ -1838,6 +2018,7 @@ body {
 [data-theme="dark"] .selected-file-remove:hover {
   background: rgba(239, 68, 68, 0.15);
 }
+
 .activity-card {
   width: 560px;
   max-width: 92vw;
@@ -2262,12 +2443,10 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(2, 6, 23, 0.62) 0%,
-    rgba(2, 6, 23, 0.45) 50%,
-    rgba(2, 6, 23, 0.62) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(2, 6, 23, 0.62) 0%,
+      rgba(2, 6, 23, 0.45) 50%,
+      rgba(2, 6, 23, 0.62) 100%);
   pointer-events: none;
   z-index: 1;
 }
