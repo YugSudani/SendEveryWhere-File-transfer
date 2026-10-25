@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function SendoraLogo({ size = 26, className = '' }) {
+export function SendoraLogo({ size = 26, color = 'var(--accent)', className = '' }) {
   return (
     <svg
       width={size}
@@ -10,23 +10,17 @@ export function SendoraLogo({ size = 26, className = '' }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <defs>
-        <linearGradient id="sendoraGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3b82f6" />
-          <stop offset="1" stopColor="#6366f1" />
-        </linearGradient>
-      </defs>
       <path
         d="M22 2L11 13"
-        stroke="url(#sendoraGrad)"
+        stroke={color}
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M22 2L15 22L11 13L2 9L22 2Z"
-        fill="url(#sendoraGrad)"
-        stroke="url(#sendoraGrad)"
+        fill={color}
+        stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -35,7 +29,7 @@ export function SendoraLogo({ size = 26, className = '' }) {
   );
 }
 
-export function FileIcon({ size = 18, color = '#3b82f6', className = '' }) {
+export function FileIcon({ size = 18, color = 'var(--accent)', className = '' }) {
   return (
     <svg
       width={size}
@@ -57,7 +51,7 @@ export function FileIcon({ size = 18, color = '#3b82f6', className = '' }) {
   );
 }
 
-export function FolderIcon({ size = 18, color = '#3b82f6', className = '' }) {
+export function FolderIcon({ size = 18, color = 'var(--accent)', className = '' }) {
   return (
     <svg
       width={size}

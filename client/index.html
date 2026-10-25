@@ -21,9 +21,10 @@
             serif: ['"Playfair Display"', "Georgia", "serif"],
           },
           colors: {
-            limeBadge: "#c2df28",
-            sendoraBlue: "#3b82f6",
-            sendoraDark: "#0f172a",
+            brand: "#C2410C",
+            brandHover: "#9A3412",
+            brandLight: "#FFEDD5",
+            brandAccent: "#FB923C",
           },
         },
       },
@@ -36,13 +37,11 @@
     try {
       var t = localStorage.getItem("sendeverywhere:theme");
       if (t !== "light" && t !== "dark") {
-        t = window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+        t = "dark";
       }
       document.documentElement.dataset.theme = t;
     } catch (e) {
-      document.documentElement.dataset.theme = "light";
+      document.documentElement.dataset.theme = "dark";
     }
   </script>
   <div id="root"></div>

@@ -193,7 +193,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     openFilePicker();
                   }}
                 >
-                  <FileIcon size={18} color="#3b82f6" />
+                  <FileIcon size={18} color="var(--accent)" />
                   <span>Add Files</span>
                 </button>
                 <button
@@ -204,7 +204,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     openFolderPicker();
                   }}
                 >
-                  <FolderIcon size={18} color="#3b82f6" />
+                  <FolderIcon size={18} color="var(--accent)" />
                   <span>Add Folders</span>
                 </button>
               </div>
@@ -252,7 +252,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   tabIndex={0}
                 >
                   <div className="dropzone-icon-circle">
-                    <CloudUploadIcon size={26} color={files.length > 0 ? '#3b82f6' : '#94a3b8'} />
+                    <CloudUploadIcon size={26} color={files.length > 0 ? 'var(--accent)' : 'var(--text-muted)'} />
                   </div>
 
                   {files.length === 0 ? (
@@ -272,7 +272,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     </>
                   ) : (
                     <>
-                      <h3 className="dropzone-heading text-blue-600">
+                      <h3 className="dropzone-heading dropzone-heading-accent">
                         {files.length} {files.length === 1 ? 'file' : 'files'} attached ({formatBytes(totalBytes)})
                       </h3>
                       <p className="dropzone-sub">Drag more files or click to add</p>
@@ -310,7 +310,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                       {files.map((f, i) => (
                         <li key={`${f.name}-${i}`} className="selected-file-item">
                           <div className="selected-file-info">
-                            <FileIcon size={14} color="#3b82f6" />
+                            <FileIcon size={14} color="var(--accent)" />
                             <span className="selected-file-name" title={f.name}>
                               {f.name}
                             </span>
@@ -357,7 +357,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 <div className="transfer-pulse-ring">
                   <div className="transfer-beam-glow" />
                   <div className="transfer-icon-float">
-                    <CloudUploadIcon size={42} color="#3b82f6" />
+                    <CloudUploadIcon size={42} color="var(--accent)" />
                   </div>
                 </div>
 
@@ -386,7 +386,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
             {result && !uploading && (
               <div className="transfer-success-box">
                 <div className="success-badge-icon">
-                  <CheckIcon size={28} color="#10b981" />
+                  <CheckIcon size={28} color="#16a34a" />
                 </div>
                 <h3 className="success-title">Files Ready to Share!</h3>
                 <p className="success-sub">Share this 6-digit code with the receiver:</p>
@@ -400,12 +400,12 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <button type="button" className="code-copy-chip">
                     {copied ? (
                       <>
-                        <CheckIcon size={14} color="#10b981" />
+                        <CheckIcon size={14} color="#16a34a" />
                         <span>Copied!</span>
                       </>
                     ) : (
                       <>
-                        <CopyIcon size={14} color="#3b82f6" />
+                        <CopyIcon size={14} color="var(--accent)" />
                         <span>Copy</span>
                       </>
                     )}
@@ -433,7 +433,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                         value={getReceiveUrl(result.code)}
                         size={168}
                         bgColor="#ffffff"
-                        fgColor="#0f172a"
+                        fgColor="#1C1917"
                         level="M"
                       />
                     </div>
@@ -645,7 +645,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   {downloadInfo.files?.map((f, i) => (
                     <li key={`${f.name}-${i}`} className="download-file-item">
                       <div className="file-info-group">
-                        <FileIcon size={16} color="#3b82f6" />
+                        <FileIcon size={16} color="var(--accent)" />
                         <span className="download-file-name">{f.name}</span>
                       </div>
                       <span className="download-file-size">{formatBytes(f.size)}</span>

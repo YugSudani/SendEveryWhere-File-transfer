@@ -27,8 +27,9 @@ export function ActivityPanel() {
   const { entries, summary, daily, clear } = useActivity();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const gridColor = isDark ? '#243349' : '#e2e8f0';
-  const tickColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#292524' : '#E7E5E4';
+  const tickColor = isDark ? '#A8A29E' : '#78716C';
+  const sentColor = isDark ? '#FB923C' : '#C2410C';
   const totalTransfers = summary.sentTransfers + summary.receivedTransfers;
 
   if (entries.length === 0) {
@@ -85,8 +86,8 @@ export function ActivityPanel() {
             <YAxis tick={{ fontSize: 11 }} stroke={tickColor} />
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 12, color: tickColor }} />
-            <Bar dataKey="sent" name="Sent (MB)" fill="#3b82f6" radius={[3, 3, 0, 0]} />
-            <Bar dataKey="received" name="Received (MB)" fill="#10b981" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="sent" name="Sent (MB)" fill={sentColor} radius={[3, 3, 0, 0]} />
+            <Bar dataKey="received" name="Received (MB)" fill="#16a34a" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

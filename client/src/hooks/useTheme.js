@@ -6,13 +6,10 @@ function getInitialTheme() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
   } catch {
-    // storage unavailable: fall through to light
+    // storage unavailable
   }
-  return 'light';
+  return 'dark';
 }
 
 export function useTheme() {
