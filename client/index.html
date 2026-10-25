@@ -1,50 +1,52 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SendEveryWhere™ — Send files - Fast - Free & secure</title>
-    <link rel="icon" type="image/x-icon" href="/faviconn.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ["Inter", "sans-serif"],
-              serif: ['"Playfair Display"', "Georgia", "serif"],
-            },
-            colors: {
-              limeBadge: "#c2df28",
-              sendoraBlue: "#3b82f6",
-              sendoraDark: "#0f172a",
-            },
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SendEveryWhere™ — Send files - Fast - Free & secure</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            serif: ['"Playfair Display"', "Georgia", "serif"],
+          },
+          colors: {
+            limeBadge: "#c2df28",
+            sendoraBlue: "#3b82f6",
+            sendoraDark: "#0f172a",
           },
         },
-      };
-    </script>
-  </head>
-  <body>
-    <script>
-      try {
-        var t = localStorage.getItem("sendeverywhere:theme");
-        if (t !== "light" && t !== "dark") {
-          t = window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light";
-        }
-        document.documentElement.dataset.theme = t;
-      } catch (e) {
-        document.documentElement.dataset.theme = "light";
+      },
+    };
+  </script>
+</head>
+
+<body>
+  <script>
+    try {
+      var t = localStorage.getItem("sendeverywhere:theme");
+      if (t !== "light" && t !== "dark") {
+        t = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
       }
-    </script>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+      document.documentElement.dataset.theme = t;
+    } catch (e) {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>
