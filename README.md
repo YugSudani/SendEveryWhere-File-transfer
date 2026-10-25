@@ -48,7 +48,7 @@ Response shape: `{ success, data, message }`.
 
 ## Notes
 
-- Max file size configurable via `MAX_FILE_SIZE_MB` (default 100).
+- Max total transfer size configurable via `MAX_TOTAL_SIZE_GB` (default 1, applies to all files in one transfer combined).
 - Expiry via `EXPIRY_MINUTES` (default 10). MongoDB TTL index + cron cleanup every minute.
 - Storage abstraction in `server/src/storage/` — swap `local.storage` for S3/R2 without touching services.
 - Uploads folder is never served statically.

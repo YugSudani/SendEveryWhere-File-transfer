@@ -30,3 +30,9 @@ export function getAbsoluteDownloadUrl(code) {
   const path = url.startsWith('/') ? url : `/${url}`;
   return `${window.location.origin}${path}`;
 }
+
+// Receive-page URL encoded in the sender's QR code, so a phone's default
+// camera app opens the page and the download starts automatically.
+export function getReceiveUrl(code) {
+  return `${window.location.origin}/receive?code=${code}`;
+}

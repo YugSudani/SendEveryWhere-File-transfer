@@ -19,11 +19,17 @@ const resolvedUploadDir = process.env.UPLOAD_DIR
     : path.join(__dirname, '..', '..', process.env.UPLOAD_DIR)
   : path.join(__dirname, '..', '..', 'uploads');
 
+// Accept fractional values (e.g. 0.5GB); fall back to 1GB when unset/invalid.
+function parseGb(raw) {
+  const parsed = parseFloat(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
 const env = {
   port: parseInt(process.env.PORT || '5000', 10),
   mongoUri: mongoUri || 'mongodb://localhost:27017/send-everywhere',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
-  maxFileSizeMb: parseInt(process.env.MAX_FILE_SIZE_MB || '100', 10),
+  maxTotalSizeGb: parseGb(process.env.MAX_TOTAL_SIZE_GB),
   maxFilesCount: parseInt(process.env.MAX_FILES_COUNT || '10', 10),
   expiryMinutes: parseInt(process.env.EXPIRY_MINUTES || '10', 10),
   uploadDir: resolvedUploadDir,

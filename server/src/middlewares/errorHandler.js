@@ -6,7 +6,7 @@ function errorHandler(err, req, res, next) {
     return res.status(413).json({
       success: false,
       data: null,
-      message: `File too large (max ${constants.MAX_FILE_SIZE_MB}MB)`,
+      message: `File too large (total limit is ${constants.MAX_TOTAL_SIZE_GB}GB)`,
     });
   }
   if (err && err.code === 'LIMIT_FILE_COUNT') {

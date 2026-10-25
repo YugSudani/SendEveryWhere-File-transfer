@@ -69,9 +69,6 @@ export function HomePage({ defaultMode }) {
       <main className="hero-main">
         {/* Hero Headings */}
         <div className="hero-headings">
-          <p className="eyebrow-badge">
-            #1 LEADING FILE TRANSFER PLATFORM
-          </p>
           <h1 className="hero-headline">
             {mode === 'send'
               ? 'Send large files – Free & secure'

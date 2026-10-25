@@ -1,6 +1,6 @@
 const express = require('express');
 const fileController = require('../controllers/file.controller');
-const upload = require('../middlewares/upload');
+const { upload, totalSizeLimit } = require('../middlewares/upload');
 const validate = require('../middlewares/validate');
 const { codeParam } = require('../middlewares/validators');
 const { uploadLimiter, downloadLimiter } = require('../middlewares/rateLimiter');
@@ -11,6 +11,7 @@ router.post(
   '/upload',
   uploadLimiter,
   upload.array('files'),
+  totalSizeLimit,
   fileController.uploadFiles
 );
 

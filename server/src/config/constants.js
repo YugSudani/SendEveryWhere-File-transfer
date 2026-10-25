@@ -16,8 +16,8 @@ const constants = {
   // Never treat an upload-dir file as an orphan until it is at least this old,
   // so an in-flight upload whose document has not been written yet is spared.
   ORPHAN_MIN_AGE_MS: env.expiryMinutes * 60 * 1000,
-  MAX_FILE_SIZE_MB: env.maxFileSizeMb,
-  MAX_FILE_SIZE_BYTES: env.maxFileSizeMb * 1024 * 1024,
+  MAX_TOTAL_SIZE_GB: env.maxTotalSizeGb,
+  MAX_TOTAL_SIZE_BYTES: Math.round(env.maxTotalSizeGb * 1024 * 1024 * 1024),
   MAX_FILES_COUNT: env.maxFilesCount,
   UPLOAD_DIR: env.uploadDir,
   CRON_SCHEDULE: '*/1 * * * *',

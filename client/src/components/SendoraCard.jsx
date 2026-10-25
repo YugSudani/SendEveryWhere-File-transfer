@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   FileIcon,
@@ -13,15 +13,18 @@ import {
   DownloadIcon,
   RefreshIcon,
   KeyIcon,
+  ShareIcon,
 } from './Icons.jsx';
-import { MAX_FILE_SIZE_MB, MAX_FILES_COUNT } from '../utils/validators.js';
+import { MAX_TOTAL_SIZE_GB, MAX_FILES_COUNT } from '../utils/validators.js';
 import { useUpload } from '../features/send/useUpload.js';
 import { useDownload } from '../features/receive/useDownload.js';
 import { CodeBoxes } from './CodeBoxes.jsx';
-import { getAbsoluteDownloadUrl } from '../api/files.js';
+import { getAbsoluteDownloadUrl, getReceiveUrl } from '../api/files.js';
 import { useCopy } from '../hooks/useCopy.js';
 import { useCountdown } from '../hooks/useCountdown.js';
 import { formatBytes, formatCountdown } from '../utils/formatBytes.js';
+import { extractTransferCode } from '../utils/validators.js';
+import { QRScannerModal } from './QRScannerModal.jsx';
 
 export function SendoraCard({ mode = 'send', onModeChange }) {
   // Upload hook
@@ -50,11 +53,81 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   } = useDownload();
 
   const { copied, copy } = useCopy();
+  const linkShare = useCopy();
   const [dragging, setDragging] = useState(false);
   const [activeTab, setActiveTab] = useState('files'); // 'files' | 'folders'
   const [isPrivate, setIsPrivate] = useState(true);
   const [downloadingState, setDownloadingState] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  // QR scanning (receive mode)
+  const [scanning, setScanning] = useState(false);
+  const autoDownloadRef = useRef(false);
+
+  /**
+   * Give the receiver a code found via URL query or QR scan:
+   * fills the code boxes, looks it up, and auto-starts the download.
+   */
+  function receiveWithCode(rawCode) {
+    const clean = String(rawCode || '').replace(/\D/g, '');
+    setReceiveCode(clean);
+    if (clean.length !== 6) return; // manual entry stays available
+    autoDownloadRef.current = true;
+    lookupCode(clean);
+  }
+
+  function handleScanResult(raw) {
+    setScanning(false);
+    receiveWithCode(extractTransferCode(raw));
+  }
+
+  // /receive?code=XXXXXX — auto-lookup on page open, then clean the URL.
+  useEffect(() => {
+    if (mode !== 'receive') return;
+    const fromUrl = new URLSearchParams(window.location.search).get('code');
+    if (fromUrl) {
+      window.history.replaceState({}, '', window.location.pathname);
+      receiveWithCode(fromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  // Consumed by scan / URL lookup: start the file download automatically
+  // once the lookup shows the available files.
+  useEffect(() => {
+    if (!downloadInfo || !autoDownloadRef.current) return;
+    autoDownloadRef.current = false;
+    const anchor = document.createElement('a');
+    anchor.href = downloadUrl();
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [downloadInfo]);
+
+  function openShare() {
+    if (!result) return;
+    const link = getAbsoluteDownloadUrl(result.code);
+    // Always copy the link, then try the native share sheet. If the browser
+    // does not support it (or it fails), fall back to the in-app popup.
+    linkShare.copy(link);
+    if (navigator.share) {
+      navigator
+        .share({
+          title: 'Files shared via Sendora',
+          text: 'Download my files using this 6-digit code or the direct link:',
+          url: link,
+        })
+        .then(() => setShowShare(false))
+        .catch((err) => {
+          if (err?.name === 'AbortError') return; // user closed native sheet
+          setShowShare(true);
+        });
+      return;
+    }
+    setShowShare(true);
+  }
 
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
@@ -62,6 +135,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   // Countdown timers
   const { remaining: sendRemaining } = useCountdown(result?.expiresAt);
   const { remaining: receiveRemaining } = useCountdown(downloadInfo?.expiresAt);
+  const shareLink = result ? getAbsoluteDownloadUrl(result.code) : '';
 
   // Drag and drop handler
   function handleDragOver(e) {
@@ -180,11 +254,11 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <div className="dropzone-icon-circle">
                     <CloudUploadIcon size={26} color={files.length > 0 ? '#3b82f6' : '#94a3b8'} />
                   </div>
-                  
+
                   {files.length === 0 ? (
                     <>
                       <h3 className="dropzone-heading">Choose a file or drag & drop it here.</h3>
-                      <p className="dropzone-sub">Max size: {MAX_FILE_SIZE_MB}MB per file, up to {MAX_FILES_COUNT} files</p>
+                      <p className="dropzone-sub">Max total: {MAX_TOTAL_SIZE_GB}GB, up to {MAX_FILES_COUNT} files</p>
                       <button
                         type="button"
                         className="btn-browse"
@@ -356,7 +430,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <div className="qr-block">
                     <div className="qr-frame">
                       <QRCodeSVG
-                        value={getAbsoluteDownloadUrl(result.code)}
+                        value={getReceiveUrl(result.code)}
                         size={168}
                         bgColor="#ffffff"
                         fgColor="#0f172a"
@@ -364,7 +438,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                       />
                     </div>
                     <p className="qr-caption">
-                      Scan with a phone camera to download directly
+                      Scan with a phone camera to open the download page
                     </p>
                   </div>
                 )}
@@ -380,13 +454,91 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <button
                     type="button"
                     className="btn-action-secondary"
-                    onClick={() => {
-                      setShowQr(false);
-                      clearUpload();
-                    }}
+                    onClick={openShare}
+                    title="Copy the download link and open the share popup"
                   >
-                    <RefreshIcon size={15} />
-                    <span>Send More</span>
+                    {linkShare.copied ? (
+                      <CheckIcon size={15} color="#10b981" />
+                    ) : (
+                      <ShareIcon size={15} />
+                    )}
+                    <span>Share Link</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SHARE LINK POPUP (fallback for browsers without native share) */}
+            {result && !uploading && showShare && (
+              <div
+                className="share-popup-backdrop"
+                onClick={() => setShowShare(false)}
+              >
+                <div
+                  className="share-popup"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Share download link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="share-popup-header">
+                    <h4>Share download link</h4>
+                    <button
+                      type="button"
+                      className="share-popup-close"
+                      onClick={() => setShowShare(false)}
+                      aria-label="Close"
+                    >
+                      <CloseIcon size={16} />
+                    </button>
+                  </div>
+                  <p className="share-popup-code">
+                    Code <strong>{result.code}</strong> — link copied to
+                    clipboard. You can also share it from here:
+                  </p>
+                  <div className="share-popup-link" title={shareLink}>
+                    {shareLink}
+                  </div>
+                  <div className="share-popup-targets">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Download my files (code ${result.code}): ${shareLink}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="share-target"
+                    >
+                      WhatsApp
+                    </a>
+                    <a
+                      href={`https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(`Download my files (code ${result.code})`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="share-target"
+                    >
+                      Telegram
+                    </a>
+                    <a
+                      href={`mailto:?subject=${encodeURIComponent('Files shared via Sendora')}&body=${encodeURIComponent(`Download my files (code ${result.code}): ${shareLink}`)}`}
+                      className="share-target"
+                    >
+                      Email
+                    </a>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-action-secondary share-popup-copy"
+                    onClick={() => linkShare.copy(shareLink)}
+                  >
+                    {linkShare.copied ? (
+                      <>
+                        <CheckIcon size={15} color="#10b981" />
+                        <span>Link Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <CopyIcon size={15} />
+                        <span>Copy Link Again</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -458,16 +610,26 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               />
               <div className="code-hint-row">
                 <span className="code-progress">{receiveCode.length}/6 digits</span>
-                {receiveCode && (
+                <div className="code-hint-actions">
                   <button
                     type="button"
                     className="code-clear-btn"
+                    onClick={() => setScanning(true)}
                     disabled={downloadLoading}
-                    onClick={() => resetDownload()}
                   >
-                    Clear code
+                    Scan QR Code
                   </button>
-                )}
+                  {receiveCode && (
+                    <button
+                      type="button"
+                      className="code-clear-btn"
+                      disabled={downloadLoading}
+                      onClick={() => resetDownload()}
+                    >
+                      Clear code
+                    </button>
+                  )}
+                </div>
               </div>
 
               {downloadError && <div className="sendora-error-banner">{downloadError}</div>}
@@ -542,6 +704,14 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 ← Back to Send
               </button>
             </div>
+
+            {/* QR camera scan modal (opened on user tap) */}
+            {scanning && (
+              <QRScannerModal
+                onResult={handleScanResult}
+                onClose={() => setScanning(false)}
+              />
+            )}
           </div>
         )}
       </div>

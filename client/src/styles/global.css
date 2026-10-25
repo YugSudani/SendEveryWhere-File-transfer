@@ -190,7 +190,7 @@ body {
 
 .hero-headings {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 15px;
   animation: fadeInDown 0.7s ease-out;
 }
 
@@ -1126,6 +1126,123 @@ body {
 }
 
 /* =========================================================
+   SHARE LINK POPUP
+   ========================================================= */
+.share-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.share-popup {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  animation: share-popup-in 0.18s ease;
+}
+
+@keyframes share-popup-in {
+  from {
+    transform: translateY(10px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.share-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.share-popup-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.share-popup-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.share-popup-close:hover {
+  background: #f1f5f9;
+}
+
+.share-popup-code {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.share-popup-code strong {
+  color: #0f172a;
+}
+
+.share-popup-link {
+  font-size: 12px;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 14px;
+}
+
+.share-popup-targets {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.share-target {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 8px 10px;
+  transition: background 0.15s ease;
+}
+
+.share-target:hover {
+  background: #e2e8f0;
+}
+
+.share-popup-copy {
+  width: 100%;
+}
+
+/* =========================================================
    SOCIAL PROOF FOOTER
    ========================================================= */
 .card-social-proof {
@@ -1297,6 +1414,98 @@ body {
 .code-clear-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.code-hint-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* =========================================================
+   QR SCANNER MODAL (receive mode)
+   ========================================================= */
+.qr-scanner-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: #0b1220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.qr-scanner-stage {
+  position: relative;
+  width: min(92vw, 420px);
+  aspect-ratio: 3 / 4;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.qr-scanner-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.qr-scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.qr-scanner-frame {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 68%;
+  height: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgba(11, 18, 32, 0.45);
+  pointer-events: none;
+}
+
+.qr-scanner-error {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 64px;
+  margin: 0;
+  background: rgba(185, 28, 28, 0.85);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.qr-scanner-cancel {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 9999px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.qr-scanner-cancel:hover {
+  background: rgba(15, 23, 42, 0.92);
 }
 
 /* QR share block (success state) */
@@ -1636,7 +1845,7 @@ body {
 
   .sendora-card {
     width: 100%;
-    max-width: 100%;
+    max-width: 87vw;
   }
 
   .activity-card {
@@ -2501,4 +2710,48 @@ body {
 
 [data-theme="dark"] .btn-quick-mode:hover {
   background: #1d4ed8;
+}
+[data-theme="dark"] .share-popup {
+  background: #1e293b;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] .share-popup-header h4,
+[data-theme="dark"] .share-popup-code strong {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .share-popup-close:hover {
+  background: #334155;
+}
+
+[data-theme="dark"] .share-popup-copy,
+[data-theme="dark"] .btn-action-secondary.share-popup-copy {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .share-popup-copy:hover {
+  background: #0b1220;
+}
+
+[data-theme="dark"] .share-popup-code {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .share-popup-link {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .share-target {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .share-target:hover {
+  background: #1e293b;
 }

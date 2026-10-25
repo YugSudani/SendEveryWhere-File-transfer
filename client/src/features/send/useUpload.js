@@ -1,25 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { uploadFiles } from '../../api/files.js';
 import { validateSelectedFiles } from '../../utils/validators.js';
 import { logTransfer } from '../../utils/activity.js';
 
 export function useUpload() {
   const [files, setFiles] = useState([]);
+  // Mirror of `files` so append/remove can validate against the whole batch.
+  const filesRef = useRef([]);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
-  function select(newFiles) {
-    const list = Array.from(newFiles || []);
-    if (list.length === 0) return;
-    setError('');
-    setResult(null);
+  function setFileList(list) {
+    filesRef.current = list;
     setFiles(list);
-    setProgress(0);
   }
 
-  function appendFiles(newFiles) {
+  function select(newFiles) {
     const list = Array.from(newFiles || []);
     if (list.length === 0) return;
     const message = validateSelectedFiles(list);
@@ -29,16 +27,33 @@ export function useUpload() {
     }
     setError('');
     setResult(null);
-    setFiles((prev) => [...prev, ...list]);
     setProgress(0);
+    setFileList(list);
+  }
+
+  function appendFiles(newFiles) {
+    const list = Array.from(newFiles || []);
+    if (list.length === 0) return;
+    // Validate against the combined batch so the total-size limit holds
+    // even when files are added across multiple drops.
+    const message = validateSelectedFiles([...filesRef.current, ...list]);
+    if (message) {
+      setError(message);
+      return;
+    }
+    setError('');
+    setResult(null);
+    setProgress(0);
+    setFileList([...filesRef.current, ...list]);
   }
 
   function removeFile(index) {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFileList(filesRef.current.filter((_, i) => i !== index));
+    setError('');
   }
 
   function clear() {
-    setFiles([]);
+    setFileList([]);
     setProgress(0);
     setResult(null);
     setError('');
@@ -46,6 +61,11 @@ export function useUpload() {
 
   async function startUpload() {
     if (files.length === 0 || uploading) return;
+    const message = validateSelectedFiles(files);
+    if (message) {
+      setError(message);
+      return;
+    }
     setUploading(true);
     setError('');
     setProgress(0);
