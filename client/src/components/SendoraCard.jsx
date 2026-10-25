@@ -544,34 +544,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               </div>
             )}
 
-            {/* Social Proof Footer */}
-            <div className="card-social-proof">
-              <div className="avatar-group">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=faces"
-                  alt="User avatar"
-                  className="avatar-img"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=faces"
-                  alt="User avatar"
-                  className="avatar-img"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=faces"
-                  alt="User avatar"
-                  className="avatar-img"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=faces"
-                  alt="User avatar"
-                  className="avatar-img"
-                />
-              </div>
-              <span className="social-proof-text">
-                — Trusted by 350k+ users and companies
-              </span>
-            </div>
+
 
             {/* Mode Switch link */}
             <div className="card-switch-mode">
