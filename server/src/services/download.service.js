@@ -3,13 +3,11 @@ const storage = require('../storage');
 
 async function resolveDownload(code) {
   const doc = await getShareByCode(code);
-  const isSingle = doc.files.length === 1;
-  if (isSingle) {
+  if (doc.files.length === 1) {
     const file = doc.files[0];
     return {
       type: 'single',
-      filePath: storage.getFilePath(file.storedName),
-      downloadName: file.originalName,
+      url: await storage.presignGet(file.key, file.originalName),
     };
   }
   return { type: 'zip', doc };

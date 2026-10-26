@@ -1,28 +1,39 @@
 const cron = require('node-cron');
 const constants = require('../config/constants');
-const shareService = require('../services/share.service');
-const logger = require('../utils/logger');
+const { removeExpiredShares } = require('../services/share.service');
+
+let running = false;
+
+/**
+ * The ONLY thing that deletes shares. For each expired share it deletes the
+ * bucket objects first (verified), then the DB record.
+ */
+async function runOnce() {
+  if (running) {
+    console.log('[cron] tick skipped: previous run still in progress');
+    return;
+  }
+  running = true;
+  const startedAt = new Date().toISOString();
+  try {
+    const { found, removed } = await removeExpiredShares();
+    if (found === 0) {
+      console.log(`[cron] ${startedAt}: nothing expired`);
+    } else {
+      console.log(`[cron] ${startedAt}: expired ${found}, fully removed ${removed}`);
+    }
+  } catch (err) {
+    console.error(`[cron] FAILED at ${startedAt}: ${err.message}\n${err.stack}`);
+  } finally {
+    running = false;
+  }
+}
 
 function startCleanupJob() {
-  cron.schedule(constants.CRON_SCHEDULE, async () => {
-    // Expiry is driven by the cron job, not by the MongoDB TTL index: only this
-    // path also deletes the stored files, which a TTL index cannot do.
-    try {
-      const removed = await shareService.removeExpiredShares();
-      if (removed > 0) logger.info(`Cleanup removed ${removed} expired shares`);
-    } catch (err) {
-      logger.error('Expired-share cleanup failed', err.message);
-    }
-
-    // Run after the expiry pass so files that are still referenced by a
-    // just-deleted share are not counted as orphans here.
-    try {
-      const orphans = await shareService.removeOrphanFiles();
-      if (orphans > 0) logger.warn(`Cleanup removed ${orphans} orphaned files`);
-    } catch (err) {
-      logger.error('Orphan-file sweep failed', err.message);
-    }
-  });
+  // Once at startup: recovers shares that expired while the server was down.
+  console.log(`[cron] registered with schedule "${constants.CRON_SCHEDULE}", running once now`);
+  runOnce();
+  cron.schedule(constants.CRON_SCHEDULE, runOnce);
 }
 
 module.exports = startCleanupJob;

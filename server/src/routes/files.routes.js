@@ -1,17 +1,26 @@
 const express = require('express');
 const fileController = require('../controllers/file.controller');
-const upload = require('../middlewares/upload');
 const validate = require('../middlewares/validate');
-const { codeParam } = require('../middlewares/validators');
-const { uploadLimiter, downloadLimiter } = require('../middlewares/rateLimiter');
+const { codeParam, initiateFiles } = require('../middlewares/validators');
+const { initiateLimiter, downloadLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
 
+// Explicit POST routes first so /initiate is not swallowed by /:code patterns.
 router.post(
-  '/upload',
-  uploadLimiter,
-  upload.array('files'),
-  fileController.uploadFiles
+  '/initiate',
+  initiateLimiter,
+  initiateFiles,
+  validate,
+  fileController.initiateUpload
+);
+
+router.post(
+  '/:code/complete',
+  downloadLimiter,
+  codeParam,
+  validate,
+  fileController.completeUpload
 );
 
 router.get('/:code', downloadLimiter, codeParam, validate, fileController.getFileInfo);

@@ -1,29 +1,40 @@
-const os = require('os');
-const path = require('path');
-const fs = require('fs/promises');
-const crypto = require('crypto');
-const constants = require('../config/constants');
+const archiver = require('archiver');
 const storage = require('../storage');
 
-async function buildZipForShare(doc) {
-  const zipName = `${constants.ZIP_PREFIX}${doc.code}-${crypto
-    .randomBytes(4)
-    .toString('hex')}.zip`;
-  const destPath = path.join(os.tmpdir(), zipName);
-  const entries = doc.files.map((f) => ({
-    filePath: storage.getFilePath(f.storedName),
-    name: f.originalName,
-  }));
-  await storage.createZip(entries, destPath);
-  return destPath;
-}
-
-async function removeTempFile(filePath) {
-  try {
-    await fs.unlink(filePath);
-  } catch (err) {
-    if (err.code !== 'ENOENT') throw err;
+/**
+ * Opens a stream per stored object and pairs it with the original filename.
+ */
+async function buildZipEntries(doc) {
+  const entries = [];
+  for (const f of doc.files) {
+    // eslint-disable-next-line no-await-in-loop
+    entries.push({
+      name: f.originalName,
+      stream: await storage.getObjectStream(f.key),
+    });
   }
+  return entries;
 }
 
-module.exports = { buildZipForShare, removeTempFile };
+/**
+ * Multi-file shares stream their ZIP straight to the response: S3 objects are
+ * pulled in and piped through archiver, no temp files are ever written.
+ */
+function zipToStream(entries, writable) {
+  return new Promise((resolve, reject) => {
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.on('error', reject);
+    archive.on('warning', (err) => {
+      if (err.code !== 'ENOENT') reject(err);
+    });
+    writable.on('error', reject);
+    writable.on('finish', resolve);
+    archive.pipe(writable);
+    for (const entry of entries) {
+      archive.append(entry.stream, { name: entry.name });
+    }
+    archive.finalize();
+  });
+}
+
+module.exports = { buildZipEntries, zipToStream };
