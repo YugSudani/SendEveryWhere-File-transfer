@@ -32,8 +32,8 @@ const initiateFiles = [
     .isLength({ max: 255 })
     .withMessage('Filename too long'),
   body('files.*.size')
-    .isInt({ min: 1, max: constants.MAX_FILE_SIZE_BYTES })
-    .withMessage(`Each file must be between 1B and ${constants.MAX_FILE_SIZE_MB}MB`),
+    .isInt({ min: 1 })
+    .withMessage('Each file must be at least 1B'),
   body('files.*.type')
     .optional({ nullable: true })
     .isString()

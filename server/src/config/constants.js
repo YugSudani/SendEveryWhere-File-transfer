@@ -20,8 +20,6 @@ const constants = {
   PRESIGN_PUT_TTL: Math.min(env.uploadWindowMinutes * 60, 7 * 24 * 3600),
   // GET: short; the browser starts the download right away.
   PRESIGN_GET_TTL: 60,
-  MAX_FILE_SIZE_MB: env.maxFileSizeMb,
-  MAX_FILE_SIZE_BYTES: env.maxFileSizeMb * 1024 * 1024,
   MAX_FILES_COUNT: env.maxFilesCount,
   CRON_SCHEDULE: '*/1 * * * *',
   SWEEPER_SCHEDULE: '*/15 * * * *',
