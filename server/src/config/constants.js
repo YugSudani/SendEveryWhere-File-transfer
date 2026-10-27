@@ -7,20 +7,24 @@ const constants = {
   CODE_MAX_RETRIES: 10,
   EXPIRY_MINUTES: env.expiryMinutes,
   EXPIRY_SECONDS: env.expiryMinutes * 60,
-  // Mongo's TTL monitor runs roughly every 60s and drops documents with no hook
-  // for storage cleanup, so it would race the cron job and orphan files. The
-  // cron is the source of truth for expiry (it deletes files *and* the doc);
-  // the TTL gets a full EXPIRY_MINUTES grace period so it never preempts it and
-  // only sweeps up docs the app missed (e.g. server was down).
-  TTL_GRACE_SECONDS: env.expiryMinutes * 60,
-  // Never treat an upload-dir file as an orphan until it is at least this old,
-  // so an in-flight upload whose document has not been written yet is spared.
-  ORPHAN_MIN_AGE_MS: env.expiryMinutes * 60 * 1000,
   MAX_TOTAL_SIZE_GB: env.maxTotalSizeGb,
   MAX_TOTAL_SIZE_BYTES: Math.round(env.maxTotalSizeGb * 1024 * 1024 * 1024),
+  // Pending shares (upload in progress) get this longer window so an in-flight
+  // upload cannot be expired out from under the sender. Completed shares use
+  // EXPIRY_MINUTES instead.
+  UPLOAD_WINDOW_MINUTES: env.uploadWindowMinutes,
+  // Presigned URLs.
+  // PUT: all URLs are signed at initiate, but files upload one after another,
+  // so the last URL must still be valid when its turn comes -> same as the
+  // upload window (capped at 7 days, the S3 maximum).
+  PRESIGN_PUT_TTL: Math.min(env.uploadWindowMinutes * 60, 7 * 24 * 3600),
+  // GET: short; the browser starts the download right away.
+  PRESIGN_GET_TTL: 60,
+  MAX_FILE_SIZE_MB: env.maxFileSizeMb,
+  MAX_FILE_SIZE_BYTES: env.maxFileSizeMb * 1024 * 1024,
   MAX_FILES_COUNT: env.maxFilesCount,
-  UPLOAD_DIR: env.uploadDir,
   CRON_SCHEDULE: '*/1 * * * *',
+  SWEEPER_SCHEDULE: '*/15 * * * *',
   ZIP_PREFIX: 'files-',
 };
 

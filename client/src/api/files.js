@@ -1,17 +1,44 @@
 import apiClient from './client';
 
-export function uploadFiles(files, onProgress) {
-  const formData = new FormData();
-  files.forEach((f) => formData.append('files', f));
+/**
+ * Step 1: ask our server for a share code + one presigned PUT URL per file.
+ * No file bytes travel here; the browser uploads directly to Filebase next.
+ */
+export function initiateUpload(fileSpecs) {
   return apiClient
-    .post('/files/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (e) => {
-        if (!e.total) return;
-        onProgress?.(Math.round((e.loaded * 100) / e.total));
-      },
-    })
+    .post('/files/initiate', { files: fileSpecs })
     .then((res) => res.data.data);
+}
+
+/**
+ * Step 2: PUT one file straight to Filebase. No extra signed headers are
+ * added; the Content-Type header sent must match the one signed on the
+ * server, which is exactly what we pass in. XHR (not fetch) so we still get
+ * upload progress events for the progress bar.
+ */
+export function putFileToUrl(url, file, contentType, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(e.loaded);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) return resolve();
+      reject(new Error(`Upload failed (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(file);
+  });
+}
+
+/**
+ * Step 3: tell our server every PUT finished. The share becomes 'ready' and
+ * its 10-minute countdown restarts from this moment.
+ */
+export function completeUpload(code) {
+  return apiClient.post(`/files/${code}/complete`).then((res) => res.data.data);
 }
 
 export function getFileInfo(code) {

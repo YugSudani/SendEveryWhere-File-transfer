@@ -1,6 +1,7 @@
 // Limits are GB values because the cap is the TOTAL transfer size, not per file.
 export const MAX_TOTAL_SIZE_GB = Number(import.meta.env.VITE_MAX_TOTAL_SIZE_GB) || 1;
 export const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_GB * 1024 * 1024 * 1024;
+export const MAX_FILE_SIZE_MB = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB) || 100;
 export const MAX_FILES_COUNT = Number(import.meta.env.VITE_MAX_FILES_COUNT) || 10;
 
 export function isValidCode(code) {
@@ -25,6 +26,11 @@ export function validateSelectedFiles(fileList) {
   if (files.length === 0) return 'Select at least one file.';
   if (files.length > MAX_FILES_COUNT) {
     return `You can send up to ${MAX_FILES_COUNT} files.`;
+  }
+  const maxFileBytes = MAX_FILE_SIZE_MB * 1024 * 1024;
+  const tooBig = files.find((file) => file.size > maxFileBytes);
+  if (tooBig) {
+    return `${tooBig.name} exceeds ${MAX_FILE_SIZE_MB}MB.`;
   }
   const totalBytes = files.reduce((acc, f) => acc + (f.size || 0), 0);
   if (totalBytes > MAX_TOTAL_SIZE_BYTES) {

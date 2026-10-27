@@ -7,12 +7,16 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const uploadLimiter = rateLimit({
+const initiateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, data: null, message: 'Too many uploads, try later' },
+  message: {
+    success: false,
+    data: null,
+    message: 'Too many uploads, try later',
+  },
 });
 
 const downloadLimiter = rateLimit({
@@ -22,4 +26,4 @@ const downloadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { generalLimiter, uploadLimiter, downloadLimiter };
+module.exports = { generalLimiter, initiateLimiter, downloadLimiter };

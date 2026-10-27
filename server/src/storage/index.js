@@ -1,2 +1,2 @@
 // Single place to swap storage backends.
-module.exports = require('./local.storage');
+module.exports = require('./s3.storage');
