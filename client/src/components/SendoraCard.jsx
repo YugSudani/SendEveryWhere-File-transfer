@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import React, { useEffect, useRef, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import {
   FileIcon,
   FolderIcon,
@@ -14,19 +14,24 @@ import {
   RefreshIcon,
   KeyIcon,
   ShareIcon,
-} from './Icons.jsx';
-import { MAX_TOTAL_SIZE_GB, MAX_FILES_COUNT } from '../utils/validators.js';
-import { useUpload } from '../features/send/useUpload.js';
-import { useDownload } from '../features/receive/useDownload.js';
-import { CodeBoxes } from './CodeBoxes.jsx';
-import { getAbsoluteDownloadUrl, getReceiveUrl } from '../api/files.js';
-import { useCopy } from '../hooks/useCopy.js';
-import { useCountdown } from '../hooks/useCountdown.js';
-import { formatBytes, formatCountdown } from '../utils/formatBytes.js';
-import { extractTransferCode } from '../utils/validators.js';
-import { QRScannerModal } from './QRScannerModal.jsx';
+} from "./Icons.jsx";
+import {
+  isHtmlFile,
+  MAX_TOTAL_SIZE_GB,
+  MAX_FILES_COUNT,
+  validateSelectedFiles,
+} from "../utils/validators.js";
+import { useUpload } from "../features/send/useUpload.js";
+import { useDownload } from "../features/receive/useDownload.js";
+import { CodeBoxes } from "./CodeBoxes.jsx";
+import { getAbsoluteDownloadUrl, getReceiveUrl } from "../api/files.js";
+import { useCopy } from "../hooks/useCopy.js";
+import { useCountdown } from "../hooks/useCountdown.js";
+import { formatBytes, formatCountdown } from "../utils/formatBytes.js";
+import { extractTransferCode } from "../utils/validators.js";
+import { QRScannerModal } from "./QRScannerModal.jsx";
 
-export function SendoraCard({ mode = 'send', onModeChange }) {
+export function SendoraCard({ mode = "send", onModeChange }) {
   // Upload hook
   const {
     files,
@@ -55,7 +60,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   const { copied, copy } = useCopy();
   const linkShare = useCopy();
   const [dragging, setDragging] = useState(false);
-  const [activeTab, setActiveTab] = useState('files'); // 'files' | 'folders'
+  const [activeTab, setActiveTab] = useState("files"); // 'files' | 'folders'
   const [isPrivate, setIsPrivate] = useState(true);
   const [downloadingState, setDownloadingState] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -69,7 +74,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
    * fills the code boxes, looks it up, and auto-starts the download.
    */
   function receiveWithCode(rawCode) {
-    const clean = String(rawCode || '').replace(/\D/g, '');
+    const clean = String(rawCode || "").replace(/\D/g, "");
     setReceiveCode(clean);
     if (clean.length !== 6) return; // manual entry stays available
     autoDownloadRef.current = true;
@@ -83,10 +88,10 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
 
   // /receive?code=XXXXXX — auto-lookup on page open, then clean the URL.
   useEffect(() => {
-    if (mode !== 'receive') return;
-    const fromUrl = new URLSearchParams(window.location.search).get('code');
+    if (mode !== "receive") return;
+    const fromUrl = new URLSearchParams(window.location.search).get("code");
     if (fromUrl) {
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, "", window.location.pathname);
       receiveWithCode(fromUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,9 +102,9 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   useEffect(() => {
     if (!downloadInfo || !autoDownloadRef.current) return;
     autoDownloadRef.current = false;
-    const anchor = document.createElement('a');
+    const anchor = document.createElement("a");
     anchor.href = downloadUrl();
-    anchor.style.display = 'none';
+    anchor.style.display = "none";
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -115,13 +120,13 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
     if (navigator.share) {
       navigator
         .share({
-          title: 'Files shared via Sendora',
-          text: 'Download my files using this 6-digit code or the direct link:',
+          title: "Files shared via Sendora",
+          text: "Download my files using this 6-digit code or the direct link:",
           url: link,
         })
         .then(() => setShowShare(false))
         .catch((err) => {
-          if (err?.name === 'AbortError') return; // user closed native sheet
+          if (err?.name === "AbortError") return; // user closed native sheet
           setShowShare(true);
         });
       return;
@@ -134,8 +139,13 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
 
   // Countdown timers
   const { remaining: sendRemaining } = useCountdown(result?.expiresAt);
-  const { remaining: receiveRemaining } = useCountdown(downloadInfo?.expiresAt);
-  const shareLink = result ? getAbsoluteDownloadUrl(result.code) : '';
+  const {
+    remaining: receiveRemaining,
+    expired: receiveCountdownExpired,
+  } = useCountdown(downloadInfo?.expiresAt);
+  const receiveExpired =
+    Boolean(downloadInfo?.expiresAt) && receiveCountdownExpired;
+  const shareLink = result ? getAbsoluteDownloadUrl(result.code) : "";
 
   // Drag and drop handler
   function handleDragOver(e) {
@@ -168,6 +178,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
   }
 
   function handleDownloadClick() {
+    if (receiveExpired) return;
     setDownloadingState(true);
     setTimeout(() => {
       setDownloadingState(false);
@@ -176,20 +187,26 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
 
   const totalBytes = files.reduce((acc, f) => acc + (f.size || 0), 0);
 
+  function startNewSession() {
+    clearUpload();
+    setShowQr(false);
+    setShowShare(false);
+  }
+
   return (
     <div className="sendora-card-layout-group">
       {/* MAIN CARD (Fixed dimensions, never shifts or glitches) */}
       <div className="sendora-card">
-        {mode === 'send' ? (
+        {mode === "send" ? (
           <>
             {/* Top segmented buttons: Add Files / Add Folders */}
             {!result && !uploading && (
               <div className="card-top-tabs">
                 <button
                   type="button"
-                  className={`tab-btn ${activeTab === 'files' ? 'active' : ''}`}
+                  className={`tab-btn ${activeTab === "files" ? "active" : ""}`}
                   onClick={() => {
-                    setActiveTab('files');
+                    setActiveTab("files");
                     openFilePicker();
                   }}
                 >
@@ -198,9 +215,9 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 </button>
                 <button
                   type="button"
-                  className={`tab-btn ${activeTab === 'folders' ? 'active' : ''}`}
+                  className={`tab-btn ${activeTab === "folders" ? "active" : ""}`}
                   onClick={() => {
-                    setActiveTab('folders');
+                    setActiveTab("folders");
                     openFolderPicker();
                   }}
                 >
@@ -215,11 +232,11 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               ref={fileInputRef}
               type="file"
               multiple
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={(e) => {
                 if (e.target.files?.length) {
                   appendFiles(e.target.files);
-                  e.target.value = '';
+                  e.target.value = "";
                 }
               }}
             />
@@ -229,11 +246,11 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               webkitdirectory=""
               directory=""
               multiple
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={(e) => {
                 if (e.target.files?.length) {
                   appendFiles(e.target.files);
-                  e.target.value = '';
+                  e.target.value = "";
                 }
               }}
             />
@@ -243,22 +260,34 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               <>
                 {/* Dropzone with stable height */}
                 <div
-                  className={`sendora-dropzone ${dragging ? 'dropzone-active' : ''} ${files.length > 0 ? 'has-files' : ''}`}
+                  className={`sendora-dropzone ${dragging ? "dropzone-active" : ""} ${files.length > 0 ? "has-files" : ""}`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  onClick={activeTab === 'folders' ? openFolderPicker : openFilePicker}
+                  onClick={
+                    activeTab === "folders" ? openFolderPicker : openFilePicker
+                  }
                   role="button"
                   tabIndex={0}
                 >
                   <div className="dropzone-icon-circle">
-                    <CloudUploadIcon size={26} color={files.length > 0 ? 'var(--accent)' : 'var(--text-muted)'} />
+                    <CloudUploadIcon
+                      size={26}
+                      color={
+                        files.length > 0 ? "var(--accent)" : "var(--text-muted)"
+                      }
+                    />
                   </div>
 
                   {files.length === 0 ? (
                     <>
-                      <h3 className="dropzone-heading">Choose a file or drag & drop it here.</h3>
-                      <p className="dropzone-sub">Max total: {MAX_TOTAL_SIZE_GB}GB, up to {MAX_FILES_COUNT} files</p>
+                      <h3 className="dropzone-heading">
+                        Choose a file or drag & drop it here.
+                      </h3>
+                      <p className="dropzone-sub">
+                        Max total: {MAX_TOTAL_SIZE_GB}GB, up to{" "}
+                        {MAX_FILES_COUNT} files
+                      </p>
                       <button
                         type="button"
                         className="btn-browse"
@@ -273,9 +302,12 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   ) : (
                     <>
                       <h3 className="dropzone-heading dropzone-heading-accent">
-                        {files.length} {files.length === 1 ? 'file' : 'files'} attached ({formatBytes(totalBytes)})
+                        {files.length} {files.length === 1 ? "file" : "files"}{" "}
+                        attached ({formatBytes(totalBytes)})
                       </h3>
-                      <p className="dropzone-sub">Drag more files or click to add</p>
+                      <p className="dropzone-sub">
+                        Drag & drop more files or click to add
+                      </p>
                       <button
                         type="button"
                         className="btn-browse"
@@ -295,7 +327,8 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <div className="selected-files-preview">
                     <div className="selected-files-header">
                       <span className="selected-files-title">
-                        {files.length} {files.length === 1 ? 'file' : 'files'} ({formatBytes(totalBytes)})
+                        {files.length} {files.length === 1 ? "file" : "files"} (
+                        {formatBytes(totalBytes)})
                       </span>
                       <button
                         type="button"
@@ -308,7 +341,11 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     </div>
                     <ul className="selected-file-list">
                       {files.map((f, i) => (
-                        <li key={`${f.name}-${i}`} className="selected-file-item">
+                        <li
+                          key={`${f.name}-${i}`}
+                          className={`selected-file-item${isHtmlFile(f) ? " selected-file-item-invalid" : ""}`}
+                          aria-invalid={isHtmlFile(f)}
+                        >
                           <div className="selected-file-info">
                             <FileIcon size={14} color="var(--accent)" />
                             <span className="selected-file-name" title={f.name}>
@@ -336,13 +373,17 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 )}
 
                 {/* Error Banner */}
-                {uploadError && <div className="sendora-error-banner">{uploadError}</div>}
+                {uploadError && (
+                  <div className="sendora-error-banner">{uploadError}</div>
+                )}
 
                 {/* Start Transfer Button */}
                 <button
                   type="button"
                   className="btn-start-transfer"
-                  disabled={files.length === 0}
+                  disabled={
+                    files.length === 0 || Boolean(validateSelectedFiles(files))
+                  }
                   onClick={startUpload}
                 >
                   <SendIcon size={18} color="#ffffff" />
@@ -361,9 +402,13 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   </div>
                 </div>
 
-                <h3 className="transfer-status-title">Transferring files securely…</h3>
+                <h3 className="transfer-status-title">
+                  Transferring files securely…
+                </h3>
                 <p className="transfer-status-sub">
-                  Encrypting and streaming {files.length} {files.length === 1 ? 'file' : 'files'} ({formatBytes(totalBytes)})
+                  Encrypting and streaming {files.length}{" "}
+                  {files.length === 1 ? "file" : "files"} (
+                  {formatBytes(totalBytes)})
                 </p>
 
                 <div className="transfer-progress-bar-container">
@@ -389,7 +434,9 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <CheckIcon size={28} color="#16a34a" />
                 </div>
                 <h3 className="success-title">Files Ready to Share!</h3>
-                <p className="success-sub">Share this 6-digit code with the receiver:</p>
+                <p className="success-sub">
+                  Share this 6-digit code with the receiver:
+                </p>
 
                 <div
                   className="code-card"
@@ -423,7 +470,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   onClick={() => setShowQr((v) => !v)}
                   aria-expanded={showQr}
                 >
-                  {showQr ? 'Hide QR code' : 'Show QR code'}
+                  {showQr ? "Hide QR code" : "Show QR code"}
                 </button>
 
                 {showQr && (
@@ -449,7 +496,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     className="btn-action-primary"
                     onClick={() => copy(result.code)}
                   >
-                    {copied ? 'Code Copied' : 'Copy Transfer Code'}
+                    {copied ? "Code Copied" : "Copy Transfer Code"}
                   </button>
                   <button
                     type="button"
@@ -465,6 +512,13 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     <span>Share Link</span>
                   </button>
                 </div>
+                <button
+                  type="button"
+                  className="btn-action-secondary btn-new-session"
+                  onClick={startNewSession}
+                >
+                  Go back to Send more
+                </button>
               </div>
             )}
 
@@ -517,7 +571,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                       Telegram
                     </a>
                     <a
-                      href={`mailto:?subject=${encodeURIComponent('Files shared via Sendora')}&body=${encodeURIComponent(`Download my files (code ${result.code}): ${shareLink}`)}`}
+                      href={`mailto:?subject=${encodeURIComponent("Files shared via Sendora")}&body=${encodeURIComponent(`Download my files (code ${result.code}): ${shareLink}`)}`}
                       className="share-target"
                     >
                       Email
@@ -544,15 +598,13 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               </div>
             )}
 
-
-
             {/* Mode Switch link */}
             <div className="card-switch-mode">
               <span>Need to download files?</span>
               <button
                 type="button"
                 className="switch-link"
-                onClick={() => onModeChange?.('receive')}
+                onClick={() => onModeChange?.("receive")}
               >
                 Enter 6-digit code →
               </button>
@@ -563,7 +615,9 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
           <div className="receive-mode-container">
             <div className="receive-header">
               <h2 className="receive-title">Receive Files</h2>
-              <p className="receive-sub">Enter the 6-digit key shared by the sender to download files.</p>
+              <p className="receive-sub">
+                Enter the 6-digit key shared by the sender to download files.
+              </p>
             </div>
 
             <form
@@ -582,7 +636,9 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 }}
               />
               <div className="code-hint-row">
-                <span className="code-progress">{receiveCode.length}/6 digits</span>
+                <span className="code-progress">
+                  {receiveCode.length}/6 digits
+                </span>
                 <div className="code-hint-actions">
                   <button
                     type="button"
@@ -605,9 +661,11 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                 </div>
               </div>
 
-              {downloadError && <div className="sendora-error-banner">{downloadError}</div>}
+              {downloadError && (
+                <div className="sendora-error-banner">{downloadError}</div>
+              )}
 
-              <button
+              {/* <button
                 type="submit"
                 className="btn-start-transfer"
                 disabled={downloadLoading || receiveCode.trim().length !== 6}
@@ -623,7 +681,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                     <span>Find & Download Files</span>
                   </>
                 )}
-              </button>
+              </button> */}
             </form>
 
             {/* Download Files Found State */}
@@ -633,11 +691,18 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                   <div>
                     <h4 className="found-title">Files available</h4>
                     <span className="found-meta">
-                      {downloadInfo.files?.length} files ({formatBytes(downloadInfo.totalSize)})
+                      {downloadInfo.files?.length} files (
+                      {formatBytes(downloadInfo.totalSize)})
                     </span>
                   </div>
-                  <div className="countdown-badge">
-                    <span>Expires in {formatCountdown(receiveRemaining)}</span>
+                  <div
+                    className={`countdown-badge${receiveExpired ? ' expired' : ''}`}
+                  >
+                    <span>
+                      {receiveExpired
+                        ? 'Expired'
+                        : `Expires in ${formatCountdown(receiveRemaining)}`}
+                    </span>
                   </div>
                 </div>
 
@@ -648,19 +713,31 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
                         <FileIcon size={16} color="var(--accent)" />
                         <span className="download-file-name">{f.name}</span>
                       </div>
-                      <span className="download-file-size">{formatBytes(f.size)}</span>
+                      <span className="download-file-size">
+                        {formatBytes(f.size)}
+                      </span>
                     </li>
                   ))}
                 </ul>
 
                 <a
                   href={downloadUrl()}
-                  className={`btn-download-now ${downloadingState ? 'downloading' : ''}`}
-                  onClick={handleDownloadClick}
+                  className={`btn-download-now ${downloadingState ? "downloading" : ""}${receiveExpired ? " expired" : ""}`}
+                  aria-disabled={receiveExpired}
+                  tabIndex={receiveExpired ? -1 : undefined}
+                  onClick={(e) => {
+                    if (receiveExpired) {
+                      e.preventDefault();
+                      return;
+                    }
+                    handleDownloadClick();
+                  }}
                 >
                   <DownloadIcon size={18} />
                   <span>
-                    {downloadingState ? 'Starting Download…' : `Download ${downloadInfo.files?.length > 1 ? 'All as ZIP' : 'File'}`}
+                    {downloadingState
+                      ? "Starting Download…"
+                      : `Download ${downloadInfo.files?.length > 1 ? "All as ZIP" : "File"}`}
                   </span>
                 </a>
               </div>
@@ -672,7 +749,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
               <button
                 type="button"
                 className="switch-link"
-                onClick={() => onModeChange?.('send')}
+                onClick={() => onModeChange?.("send")}
               >
                 ← Back to Send
               </button>
@@ -690,7 +767,7 @@ export function SendoraCard({ mode = 'send', onModeChange }) {
       </div>
 
       {/* DEDICATED FILES SIDE CARD (Appears cleanly on the side, eliminating glitches) */}
-      {mode === 'send' && files.length > 0 && !result && !uploading && null}
+      {mode === "send" && files.length > 0 && !result && !uploading && null}
     </div>
   );
 }

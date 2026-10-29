@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { initiateUpload, putFileToUrl, completeUpload } from '../../api/files.js';
-import { validateSelectedFiles } from '../../utils/validators.js';
+import { isHtmlFile, validateSelectedFiles } from '../../utils/validators.js';
 import { logTransfer } from '../../utils/activity.js';
 
 export function useUpload() {
@@ -22,6 +22,11 @@ export function useUpload() {
     const message = validateSelectedFiles(list);
     if (message) {
       setError(message);
+      if (list.some(isHtmlFile)) {
+        setResult(null);
+        setProgress(0);
+        setFileList(list);
+      }
       return;
     }
     setError('');
@@ -37,6 +42,11 @@ export function useUpload() {
     const message = validateSelectedFiles(combined);
     if (message) {
       setError(message);
+      if (combined.some(isHtmlFile)) {
+        setResult(null);
+        setProgress(0);
+        setFileList(combined);
+      }
       return;
     }
     setError('');
@@ -46,8 +56,9 @@ export function useUpload() {
   }
 
   function removeFile(index) {
-    setFileList(filesRef.current.filter((_, i) => i !== index));
-    setError('');
+    const remaining = filesRef.current.filter((_, i) => i !== index);
+    setFileList(remaining);
+    setError(remaining.length ? validateSelectedFiles(remaining) || '' : '');
   }
 
   function clear() {
